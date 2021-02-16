@@ -1,13 +1,20 @@
-# import tkinter as tk
-# from typing import Text
+from Models import *
 
-# window = tk.Tk()
-# window.geometry('700x500')
-# window.resizable(0,0)
+vendedor = Vendedor()
+# vendedor.criar('jacquan', '12034568791') 
+# vendedor.atualizarNome('erick jaquin', '12034568791')
+vendedor.ler('12034568791')
+# vendedor.deletar('12034568791')
 
+comprador = Comprador()
+# comprador.criar('william', '12034568790') 
+# comprador.atualizarNome('willis', '12034568790')
+comprador.ler('12034568790')
+# comprador.deletar('12034568790')
 
-# nameLabel = tk.Label(window,text='Nome').grid(row=0,column=0)
-# name = tk.StringVar()
-# nameEntry = tk.Entry(window,textvariable=name).grid(row=0,column=1)
-
-# window.mainloop()
+carro = Carro()
+# carro.criar('BMW', '5000,00', 'ABC1234', comprador = comprador, vendedor = vendedor)
+# carro.atualizarModelo('AUDI', 'ABC1234')
+# carro.atualizarModelo('7000,00', 'ABC1234')
+carro.ler('ABC1234')
+# carro.deletar('ABC1234')

@@ -1,8 +1,4 @@
-from os import truncate, umask
-from tkinter.constants import CASCADE, TRUE
-from typing import cast
 from mongoengine import *
-
 
 connect('mongobd_concessionaria')
 
@@ -18,19 +14,18 @@ class Vendedor(Document):
 
     def ler(self, cpf_busca):
         try:
-            vendedor = Vendedor.objects(cpf = cpf_busca)
+            vendedor = Vendedor.objects.get(cpf = cpf_busca)
             print('\tVendedor:')
-            for i in vendedor:
-                print(f'nome: {i.nome}\ncodigo: {i.cpf}')
-        except DoesNotExist:
+            print(f'nome: {vendedor.nome}\ncodigo: {vendedor.cpf}')
+        except (DoesNotExist, UnboundLocalError) as e:
             print('Not Found')
 
         try:
-            carros = Carro.objects(vendedor = cpf_busca)
+            carros = Carro.objects(vendedor = vendedor.id)
             print('\tCarros:')
             for i in carros:
                 print(f'modelo: {i.modelo}\nplaca: {i.placa}')
-        except DoesNotExist:
+        except (DoesNotExist, UnboundLocalError) as e:
             print('Não possui carros')
 
     def atualizarNome(self, nome_editado, cpf_busca):
@@ -41,14 +36,14 @@ class Vendedor(Document):
             )
             vendedor.reload()
             print('Editado')
-        except DoesNotExist:
+        except (DoesNotExist, UnboundLocalError) as e:
             print("User not found")
 
     def deletar(self, cpf_busca):
         try:
             Vendedor.objects(cpf = cpf_busca).delete()
             print('deletado')
-        except DoesNotExist:
+        except (DoesNotExist, UnboundLocalError) as e:
             print("User not found")
 
     meta = {
@@ -67,19 +62,18 @@ class Comprador(Document):
 
     def ler(self, cpf_busca):
         try:
-            comprador = Comprador.objects(cpf = cpf_busca)
+            comprador = Comprador.objects.get(cpf = cpf_busca)
             print('\tComprador:')
-            for i in comprador:
-                print(f'nome : {i.nome}\ncpf : {i.cpf}')
-        except DoesNotExist:
+            print(f'nome : {comprador.nome}\ncpf : {comprador.cpf}')
+        except (DoesNotExist, UnboundLocalError) as e:
             print('Not found')
 
         try:
-            carros = Carro.objects(comprador = cpf_busca)
+            carros = Carro.objects(comprador = comprador.id)
             print('\tCarros:')
             for i in carros:
                 print(f'modelo: {i.modelo}\nplaca: {i.placa}')
-        except DoesNotExist:
+        except (DoesNotExist, UnboundLocalError) as e:
             print('Não possui carros')
 
     def atualizarNome(self, nome_editado, cpf_busca):
@@ -90,14 +84,14 @@ class Comprador(Document):
             )
             comprador.reload()
             print('Editado')
-        except DoesNotExist:
+        except (DoesNotExist, UnboundLocalError) as e:
             print("User not found")
 
     def deletar(self, cpf_busca):
         try:
             Comprador.objects(cpf = cpf_busca).delete()
             print('deletado')
-        except DoesNotExist:
+        except (DoesNotExist, UnboundLocalError) as e:
             print("User not found")
 
     meta = {
@@ -108,8 +102,8 @@ class Comprador(Document):
 class Carro(DynamicDocument):
     modelo = StringField(unique=True, required=True)
     valor = StringField(required=True)
-    comprador = ListField(ReferenceField(Comprador, CASCADE=True))
-    vendedor = ListField(ReferenceField(Vendedor, CASCADE=True))
+    comprador = ReferenceField(Comprador, reverse_delete_rule=CASCADE)
+    vendedor = ReferenceField(Vendedor, reverse_delete_rule=CASCADE)
     placa = StringField(max_length=7, required=True, unique=True)
 
     def criar(self, modelo, valor, placa, comprador, vendedor):
@@ -121,11 +115,11 @@ class Carro(DynamicDocument):
         self.save()
 
     def ler(self, placa_busca):
-        try
+        try:
             carro = Carro.objects(placa = placa_busca)
             for i in carro:
-                print(f'nome : {i.modelo}\nvalor : {i.valor}\ndono: {i.comprador}. \n Vendido por {i.vendedor}')
-        except:
+                print(f'nome : {i.modelo}\nvalor : {i.valor}\ndono: {i.comprador.nome}. \nVendido por {i.vendedor.nome}')
+        except (DoesNotExist, UnboundLocalError) as e:
             print('Not found')
 
     def atualizarModelo(self, modelo_editado, placa_busca):
@@ -136,7 +130,7 @@ class Carro(DynamicDocument):
             )
             carro.reload()
             print('Editado')
-        except DoesNotExist:
+        except (DoesNotExist, UnboundLocalError) as e:
             print("User not found")
 
     def atualizarValor(self, valor_editado, placa_busca):
@@ -147,35 +141,18 @@ class Carro(DynamicDocument):
             )
             carro.reload()
             print('Editado')
-        except DoesNotExist:
+        except (DoesNotExist, UnboundLocalError) as e:
             print("User not found")
 
     def deletar(self, placa_busca):
         try:
             Carro.objects(placa = placa_busca).delete()
             print('deletado')
-        except DoesNotExist:
+        except (DoesNotExist, UnboundLocalError) as e:
             print("User not found")
 
     meta = {
         'indexes' : ['placa']
+    }
 
 
-vendedor = Vendedor()
-vendedor.criar('jacquan', '12034568791') 
-# vendedor.atualizarNome('erick jaquin', '12034568791')
-# vendedor.ler('12034568791')
-# vendedor.deletar('12034568791')
-
-comprador = Comprador()
-comprador.criar('william', '12034568790') 
-# comprador.atualizarNome('willis', '12034568790')
-# comprador.ler('12034568790')
-# comprador.deletar('12034568790')
-
-carro = Carro()
-carro.criar('BMW', '5000,00', 'ABC1234', comprador.cpf, vendedor.cpf)
-# carro.atualizarModelo('AUDI', 'ABC1234')
-# carro.atualizarModelo('7000,00', 'ABC1234')
-# carro.ler('ABC1234')
-# carro.deletar('ABC1234')
